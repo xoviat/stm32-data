@@ -58,22 +58,446 @@ mod xml {
     }
 }
 
-// mod pdsc {
-//     use serde::Deserialize;
-//
-//     #[derive(Clone, Debug, Deserialize, PartialEq)]
-//     pub struct Package {
-//         pub devices: Vec<Family>,
-//     }
-//
-//     #[derive(Clone, Debug, Deserialize, PartialEq)]
-//     pub struct Family {
-//         pub sub_families: Vec<SubFamily>,
-//     }
-//
-//     #[derive(Clone, Debug, Deserialize, PartialEq)]
-//     pub struct SubFamily {}
-// }
+mod pdsc {
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Package {
+        pub devices: Devices,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Devices {
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        pub family: Family,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Family {
+        #[serde(rename = "@Dfamily")]
+        pub dfamily: String,
+        #[serde(rename = "@Dvendor")]
+        pub dvendor: String,
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        pub processor: Processor,
+        pub book: Vec<FamilyBook>,
+        pub description: String,
+        pub feature: FamilyFeature,
+        pub environment: FamilyEnvironment,
+        #[serde(rename = "subFamily")]
+        pub sub_family: Vec<SubFamily>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Processor {
+        #[serde(rename = "@Dcore")]
+        pub dcore: String,
+        #[serde(rename = "@DcoreVersion")]
+        pub dcore_version: String,
+        #[serde(rename = "@Dfpu")]
+        pub dfpu: String,
+        #[serde(rename = "@Dmpu")]
+        pub dmpu: String,
+        #[serde(rename = "@Ddsp")]
+        pub ddsp: String,
+        #[serde(rename = "@Dtz")]
+        pub dtz: String,
+        #[serde(rename = "@Dendian")]
+        pub dendian: String,
+        #[serde(rename = "@Dclock")]
+        pub dclock: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct FamilyBook {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "@title")]
+        pub title: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct FamilyFeature {
+        #[serde(rename = "@type")]
+        pub feature_type: String,
+        #[serde(rename = "@n")]
+        pub n: String,
+        #[serde(rename = "@m")]
+        pub m: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct FamilyEnvironment {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        #[serde(rename = "device")]
+        pub stm32_device: FamilyEnvironmentStm32Device,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct FamilyEnvironmentStm32Device {
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        pub descriptors: FamilyEnvironmentStm32DeviceDescriptors,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct FamilyEnvironmentStm32DeviceDescriptors {
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        pub descriptor: FamilyEnvironmentStm32DeviceDescriptorsDescriptor,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct FamilyEnvironmentStm32DeviceDescriptorsDescriptor {
+        #[serde(rename = "@schemaType")]
+        pub schema_type: String,
+        #[serde(rename = "@path")]
+        pub path: String,
+        #[serde(rename = "@schemaVersion")]
+        pub schema_version: String,
+        #[serde(rename = "@version")]
+        pub version: String,
+    }
+
+    /// Mirrors the `xml::Mcu`
+    ///     - `family` is given in the struct containing this
+    ///     - `line` is `dsub_family`
+    ///     - `cores` is given in the struct contaning this
+    ///     - `rams` is given in the struct containing this
+    ///     - `flash is given in this struct
+    ///     - additional information given in environment/descriptors
+    ///     
+    #[derive(Serialize, Deserialize)]
+    pub struct SubFamily {
+        #[serde(rename = "@DsubFamily")]
+        pub dsub_family: String,
+        pub memory: SubFamilyMemory,
+        pub book: SubFamilyBook,
+        pub feature: Vec<SubFamilyFeature>,
+        pub environment: Vec<SubFamilyEnvironment>,
+        pub device: Vec<Device>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct SubFamilyMemory {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "@access")]
+        pub access: String,
+        #[serde(rename = "@start")]
+        pub start: String,
+        #[serde(rename = "@size")]
+        pub size: String,
+        #[serde(rename = "@uninit")]
+        pub uninit: String,
+        #[serde(rename = "@default")]
+        pub default: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct SubFamilyBook {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "@title")]
+        pub title: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct SubFamilyFeature {
+        #[serde(rename = "@type")]
+        pub feature_type: String,
+        #[serde(rename = "@name")]
+        pub name: Option<String>,
+        #[serde(rename = "@n")]
+        pub n: String,
+        #[serde(rename = "@m")]
+        pub m: Option<String>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct SubFamilyEnvironment {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        #[serde(rename = "device")]
+        pub stm32_device: Option<SubFamilyEnvironmentStm32Device>,
+        pub idcode: Option<Idcode>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct SubFamilyEnvironmentStm32Device {
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        pub descriptors: SubFamilyEnvironmentStm32DeviceDescriptors,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct SubFamilyEnvironmentStm32DeviceDescriptors {
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        pub descriptor: Vec<SubFamilyEnvironmentStm32DeviceDescriptorsDescriptor>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct SubFamilyEnvironmentStm32DeviceDescriptorsDescriptor {
+        #[serde(rename = "@schemaType")]
+        pub schema_type: String,
+        #[serde(rename = "@path")]
+        pub path: String,
+        #[serde(rename = "@schemaVersion")]
+        pub schema_version: String,
+        #[serde(rename = "@version")]
+        pub version: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Idcode {
+        #[serde(rename = "@address")]
+        pub address: String,
+        #[serde(rename = "@id")]
+        pub id: String,
+        #[serde(rename = "@ap")]
+        pub ap: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Device {
+        #[serde(rename = "@Dname")]
+        pub dname: String,
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        pub compile: Compile,
+        pub memory: DeviceMemory,
+        pub algorithm: Algorithm,
+        pub book: Option<DeviceBook>,
+        pub feature: Vec<DeviceFeature>,
+        pub environment: DeviceEnvironment,
+        pub debug: Debug,
+        pub flashinfo: Flashinfo,
+        pub variant: Vec<Variant>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Compile {
+        #[serde(rename = "@header")]
+        pub header: String,
+        #[serde(rename = "@define")]
+        pub define: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct DeviceMemory {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "@access")]
+        pub access: String,
+        #[serde(rename = "@start")]
+        pub start: String,
+        #[serde(rename = "@size")]
+        pub size: String,
+        #[serde(rename = "@default")]
+        pub default: String,
+        #[serde(rename = "@startup")]
+        pub startup: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Algorithm {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "@start")]
+        pub start: String,
+        #[serde(rename = "@size")]
+        pub size: String,
+        #[serde(rename = "@RAMstart")]
+        pub ramstart: String,
+        #[serde(rename = "@RAMsize")]
+        pub ramsize: String,
+        #[serde(rename = "@default")]
+        pub default: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct DeviceBook {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "@title")]
+        pub title: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct DeviceFeature {
+        #[serde(rename = "@type")]
+        pub feature_type: String,
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "@n")]
+        pub n: Option<String>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct DeviceEnvironment {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        #[serde(rename = "device")]
+        pub stm32_device: DeviceEnvironmentStm32Device,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct DeviceEnvironmentStm32Device {
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        pub descriptors: DeviceEnvironmentStm32DeviceDescriptors,
+        #[serde(rename = "extra-attributes")]
+        pub extra_attributes: Option<DeviceEnvironmentStm32DeviceExtraAttributes>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct DeviceEnvironmentStm32DeviceDescriptors {
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        pub descriptor: Vec<DeviceEnvironmentStm32DeviceDescriptorsDescriptor>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct DeviceEnvironmentStm32DeviceDescriptorsDescriptor {
+        #[serde(rename = "@schemaType")]
+        pub schema_type: String,
+        #[serde(rename = "@path")]
+        pub path: String,
+        #[serde(rename = "@schemaVersion")]
+        pub schema_version: String,
+        #[serde(rename = "@version")]
+        pub version: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct DeviceEnvironmentStm32DeviceExtraAttributes {
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        #[serde(rename = "extra-attribute")]
+        pub extra_attribute: DeviceEnvironmentStm32DeviceExtraAttributesExtraAttribute,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct DeviceEnvironmentStm32DeviceExtraAttributesExtraAttribute {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "@value")]
+        pub value: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Debug {
+        #[serde(rename = "@svd")]
+        pub svd: String,
+        #[serde(rename = "@__ap")]
+        pub _ap: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Flashinfo {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "@start")]
+        pub start: String,
+        #[serde(rename = "@pagesize")]
+        pub pagesize: String,
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        pub block: Block,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Block {
+        #[serde(rename = "@count")]
+        pub count: String,
+        #[serde(rename = "@size")]
+        pub size: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Variant {
+        #[serde(rename = "@Dvariant")]
+        pub dvariant: String,
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        pub feature: Option<VariantFeature>,
+        pub environment: Option<VariantEnvironment>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct VariantFeature {
+        #[serde(rename = "@type")]
+        pub feature_type: String,
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "@n")]
+        pub n: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct VariantEnvironment {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        #[serde(rename = "device")]
+        pub stm32_device: VariantEnvironmentStm32Device,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct VariantEnvironmentStm32Device {
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        #[serde(rename = "extra-attributes")]
+        pub extra_attributes: VariantEnvironmentStm32DeviceExtraAttributes,
+        pub descriptors: VariantEnvironmentStm32DeviceDescriptors,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct VariantEnvironmentStm32DeviceExtraAttributes {
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        #[serde(rename = "extra-attribute")]
+        pub extra_attribute: VariantEnvironmentStm32DeviceExtraAttributesExtraAttribute,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct VariantEnvironmentStm32DeviceExtraAttributesExtraAttribute {
+        #[serde(rename = "@name")]
+        pub name: String,
+        #[serde(rename = "@value")]
+        pub value: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct VariantEnvironmentStm32DeviceDescriptors {
+        #[serde(rename = "$text")]
+        pub text: Option<String>,
+        pub descriptor: VariantEnvironmentStm32DeviceDescriptorsDescriptor,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct VariantEnvironmentStm32DeviceDescriptorsDescriptor {
+        #[serde(rename = "@schemaType")]
+        pub schema_type: String,
+        #[serde(rename = "@path")]
+        pub path: String,
+        #[serde(rename = "@schemaVersion")]
+        pub schema_version: String,
+        #[serde(rename = "@version")]
+        pub version: String,
+    }
+}
 
 pub struct Chip {
     #[allow(dead_code)]

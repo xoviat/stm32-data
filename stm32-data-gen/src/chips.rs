@@ -340,7 +340,6 @@ mod pdsc {
             }
 
             #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-            #[serde(rename_all = "PascalCase")]
             pub struct Characteristics {
                 #[serde(rename = "package_name")]
                 pub package_name: String,
@@ -353,7 +352,6 @@ mod pdsc {
             }
 
             #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-            #[serde(rename_all = "PascalCase")]
             pub struct PinTypeDescription {
                 pub s: String,
                 #[serde(rename = "I/O")]
@@ -361,7 +359,6 @@ mod pdsc {
             }
 
             #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-            #[serde(rename_all = "PascalCase")]
             pub struct IoStructureTypeDescription {
                 #[serde(rename = "RST")]
                 pub rst: String,
@@ -372,7 +369,6 @@ mod pdsc {
             }
 
             #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-            #[serde(rename_all = "PascalCase")]
             pub struct IoStructureOptionsDescription {
                 #[serde(rename = "a")]
                 pub a: String,
@@ -381,7 +377,6 @@ mod pdsc {
             }
 
             #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-            #[serde(rename_all = "PascalCase")]
             pub struct Signal {
                 #[serde(rename = "name")]
                 pub name: String,
@@ -394,7 +389,6 @@ mod pdsc {
             }
 
             #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-            #[serde(rename_all = "PascalCase")]
             pub struct Function {
                 #[serde(rename = "type")]
                 pub type_field: String,
@@ -403,7 +397,6 @@ mod pdsc {
             }
 
             #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-            #[serde(rename_all = "PascalCase")]
             pub struct Bond {
                 #[serde(rename = "die_pad")]
                 pub die_pad: String,
@@ -414,7 +407,6 @@ mod pdsc {
             }
 
             #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-            #[serde(rename_all = "PascalCase")]
             pub struct Sharing {
                 #[serde(rename = "signals")]
                 pub signals: Vec<String>,

@@ -82,9 +82,9 @@ mod pdsc {
         #[serde(rename = "$text")]
         pub text: Option<String>,
         pub processor: Processor,
-        pub book: Vec<FamilyBook>,
+        pub book: Vec<Book>,
         pub description: String,
-        pub feature: FamilyFeature,
+        pub feature: Vec<Feature>,
         pub environment: FamilyEnvironment,
         #[serde(rename = "subFamily")]
         pub sub_family: Vec<SubFamily>,
@@ -108,24 +108,6 @@ mod pdsc {
         pub dendian: String,
         #[serde(rename = "@Dclock")]
         pub dclock: String,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct FamilyBook {
-        #[serde(rename = "@name")]
-        pub name: String,
-        #[serde(rename = "@title")]
-        pub title: String,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct FamilyFeature {
-        #[serde(rename = "@type")]
-        pub feature_type: String,
-        #[serde(rename = "@n")]
-        pub n: String,
-        #[serde(rename = "@m")]
-        pub m: String,
     }
 
     #[derive(Serialize, Deserialize)]
@@ -176,15 +158,15 @@ mod pdsc {
     pub struct SubFamily {
         #[serde(rename = "@DsubFamily")]
         pub dsub_family: String,
-        pub memory: SubFamilyMemory,
-        pub book: SubFamilyBook,
-        pub feature: Vec<SubFamilyFeature>,
+        pub memory: Memory,
+        pub book: Vec<Book>,
+        pub feature: Vec<Feature>,
         pub environment: Vec<SubFamilyEnvironment>,
         pub device: Vec<Device>,
     }
 
     #[derive(Serialize, Deserialize)]
-    pub struct SubFamilyMemory {
+    pub struct Memory {
         #[serde(rename = "@name")]
         pub name: String,
         #[serde(rename = "@access")]
@@ -197,18 +179,12 @@ mod pdsc {
         pub uninit: String,
         #[serde(rename = "@default")]
         pub default: String,
+        #[serde(rename = "@startup")]
+        pub startup: String,
     }
 
     #[derive(Serialize, Deserialize)]
-    pub struct SubFamilyBook {
-        #[serde(rename = "@name")]
-        pub name: String,
-        #[serde(rename = "@title")]
-        pub title: String,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct SubFamilyFeature {
+    pub struct Feature {
         #[serde(rename = "@type")]
         pub feature_type: String,
         #[serde(rename = "@name")]
@@ -273,10 +249,10 @@ mod pdsc {
         #[serde(rename = "$text")]
         pub text: Option<String>,
         pub compile: Compile,
-        pub memory: DeviceMemory,
+        pub memory: Vec<Memory>,
         pub algorithm: Algorithm,
-        pub book: Option<DeviceBook>,
-        pub feature: Vec<DeviceFeature>,
+        pub book: Vec<Book>,
+        pub feature: Vec<Feature>,
         pub environment: DeviceEnvironment,
         pub debug: Debug,
         pub flashinfo: Flashinfo,
@@ -289,22 +265,6 @@ mod pdsc {
         pub header: String,
         #[serde(rename = "@define")]
         pub define: String,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct DeviceMemory {
-        #[serde(rename = "@name")]
-        pub name: String,
-        #[serde(rename = "@access")]
-        pub access: String,
-        #[serde(rename = "@start")]
-        pub start: String,
-        #[serde(rename = "@size")]
-        pub size: String,
-        #[serde(rename = "@default")]
-        pub default: String,
-        #[serde(rename = "@startup")]
-        pub startup: String,
     }
 
     #[derive(Serialize, Deserialize)]
@@ -324,21 +284,11 @@ mod pdsc {
     }
 
     #[derive(Serialize, Deserialize)]
-    pub struct DeviceBook {
+    pub struct Book {
         #[serde(rename = "@name")]
         pub name: String,
         #[serde(rename = "@title")]
         pub title: String,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct DeviceFeature {
-        #[serde(rename = "@type")]
-        pub feature_type: String,
-        #[serde(rename = "@name")]
-        pub name: String,
-        #[serde(rename = "@n")]
-        pub n: Option<String>,
     }
 
     #[derive(Serialize, Deserialize)]
@@ -430,18 +380,8 @@ mod pdsc {
         pub dvariant: String,
         #[serde(rename = "$text")]
         pub text: Option<String>,
-        pub feature: Option<VariantFeature>,
+        pub feature: Option<Feature>,
         pub environment: Option<VariantEnvironment>,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct VariantFeature {
-        #[serde(rename = "@type")]
-        pub feature_type: String,
-        #[serde(rename = "@name")]
-        pub name: String,
-        #[serde(rename = "@n")]
-        pub n: String,
     }
 
     #[derive(Serialize, Deserialize)]

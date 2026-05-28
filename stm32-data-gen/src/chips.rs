@@ -84,8 +84,10 @@ mod pdsc {
         pub processor: Processor,
         pub book: Vec<Book>,
         pub description: String,
-        pub feature: Vec<Feature>,
-        pub environment: FamilyEnvironment,
+        #[serde(rename = "feature")]
+        pub features: Vec<Feature>,
+        #[serde(rename = "environment")]
+        pub environments: Vec<Environment>,
         #[serde(rename = "subFamily")]
         pub sub_family: Vec<SubFamily>,
     }
@@ -110,42 +112,6 @@ mod pdsc {
         pub dclock: String,
     }
 
-    #[derive(Serialize, Deserialize)]
-    pub struct FamilyEnvironment {
-        #[serde(rename = "@name")]
-        pub name: String,
-        #[serde(rename = "$text")]
-        pub text: Option<String>,
-        #[serde(rename = "device")]
-        pub stm32_device: FamilyEnvironmentStm32Device,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct FamilyEnvironmentStm32Device {
-        #[serde(rename = "$text")]
-        pub text: Option<String>,
-        pub descriptors: FamilyEnvironmentStm32DeviceDescriptors,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct FamilyEnvironmentStm32DeviceDescriptors {
-        #[serde(rename = "$text")]
-        pub text: Option<String>,
-        pub descriptor: FamilyEnvironmentStm32DeviceDescriptorsDescriptor,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct FamilyEnvironmentStm32DeviceDescriptorsDescriptor {
-        #[serde(rename = "@schemaType")]
-        pub schema_type: String,
-        #[serde(rename = "@path")]
-        pub path: String,
-        #[serde(rename = "@schemaVersion")]
-        pub schema_version: String,
-        #[serde(rename = "@version")]
-        pub version: String,
-    }
-
     /// Mirrors the `xml::Mcu`
     ///     - `family` is given in the struct containing this
     ///     - `line` is `dsub_family`
@@ -160,8 +126,10 @@ mod pdsc {
         pub dsub_family: String,
         pub memory: Memory,
         pub book: Vec<Book>,
-        pub feature: Vec<Feature>,
-        pub environment: Vec<SubFamilyEnvironment>,
+        #[serde(rename = "feature")]
+        pub features: Vec<Feature>,
+        #[serde(rename = "environment")]
+        pub environments: Vec<Environment>,
         pub device: Vec<Device>,
     }
 
@@ -196,43 +164,6 @@ mod pdsc {
     }
 
     #[derive(Serialize, Deserialize)]
-    pub struct SubFamilyEnvironment {
-        #[serde(rename = "@name")]
-        pub name: String,
-        #[serde(rename = "$text")]
-        pub text: Option<String>,
-        #[serde(rename = "device")]
-        pub stm32_device: Option<SubFamilyEnvironmentStm32Device>,
-        pub idcode: Option<Idcode>,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct SubFamilyEnvironmentStm32Device {
-        #[serde(rename = "$text")]
-        pub text: Option<String>,
-        pub descriptors: SubFamilyEnvironmentStm32DeviceDescriptors,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct SubFamilyEnvironmentStm32DeviceDescriptors {
-        #[serde(rename = "$text")]
-        pub text: Option<String>,
-        pub descriptor: Vec<SubFamilyEnvironmentStm32DeviceDescriptorsDescriptor>,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct SubFamilyEnvironmentStm32DeviceDescriptorsDescriptor {
-        #[serde(rename = "@schemaType")]
-        pub schema_type: String,
-        #[serde(rename = "@path")]
-        pub path: String,
-        #[serde(rename = "@schemaVersion")]
-        pub schema_version: String,
-        #[serde(rename = "@version")]
-        pub version: String,
-    }
-
-    #[derive(Serialize, Deserialize)]
     pub struct Idcode {
         #[serde(rename = "@address")]
         pub address: String,
@@ -253,7 +184,7 @@ mod pdsc {
         pub algorithm: Algorithm,
         pub book: Vec<Book>,
         pub feature: Vec<Feature>,
-        pub environment: DeviceEnvironment,
+        pub environment: Vec<Environment>,
         pub debug: Debug,
         pub flashinfo: Flashinfo,
         pub variant: Vec<Variant>,
@@ -292,33 +223,31 @@ mod pdsc {
     }
 
     #[derive(Serialize, Deserialize)]
-    pub struct DeviceEnvironment {
+    pub struct Environment {
         #[serde(rename = "@name")]
         pub name: String,
         #[serde(rename = "$text")]
         pub text: Option<String>,
         #[serde(rename = "device")]
-        pub stm32_device: DeviceEnvironmentStm32Device,
+        pub device: STDevice,
     }
 
-    #[derive(Serialize, Deserialize)]
-    pub struct DeviceEnvironmentStm32Device {
+    #[derive(Serialize, Deserialize, Default)]
+    pub struct STDevice {
         #[serde(rename = "$text")]
         pub text: Option<String>,
-        pub descriptors: DeviceEnvironmentStm32DeviceDescriptors,
+        pub descriptors: DeviceDescriptors,
         #[serde(rename = "extra-attributes")]
-        pub extra_attributes: Option<DeviceEnvironmentStm32DeviceExtraAttributes>,
+        pub extra_attributes: DeviceExtraAttributes,
+    }
+
+    #[derive(Serialize, Deserialize, Default)]
+    pub struct DeviceDescriptors {
+        pub descriptor: Vec<DeviceDescriptor>,
     }
 
     #[derive(Serialize, Deserialize)]
-    pub struct DeviceEnvironmentStm32DeviceDescriptors {
-        #[serde(rename = "$text")]
-        pub text: Option<String>,
-        pub descriptor: Vec<DeviceEnvironmentStm32DeviceDescriptorsDescriptor>,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct DeviceEnvironmentStm32DeviceDescriptorsDescriptor {
+    pub struct DeviceDescriptor {
         #[serde(rename = "@schemaType")]
         pub schema_type: String,
         #[serde(rename = "@path")]
@@ -329,16 +258,14 @@ mod pdsc {
         pub version: String,
     }
 
-    #[derive(Serialize, Deserialize)]
-    pub struct DeviceEnvironmentStm32DeviceExtraAttributes {
-        #[serde(rename = "$text")]
-        pub text: Option<String>,
+    #[derive(Serialize, Deserialize, Default)]
+    pub struct DeviceExtraAttributes {
         #[serde(rename = "extra-attribute")]
-        pub extra_attribute: DeviceEnvironmentStm32DeviceExtraAttributesExtraAttribute,
+        pub extra_attribute: Vec<DeviceExtraAttribute>,
     }
 
     #[derive(Serialize, Deserialize)]
-    pub struct DeviceEnvironmentStm32DeviceExtraAttributesExtraAttribute {
+    pub struct DeviceExtraAttribute {
         #[serde(rename = "@name")]
         pub name: String,
         #[serde(rename = "@value")]
@@ -380,62 +307,10 @@ mod pdsc {
         pub dvariant: String,
         #[serde(rename = "$text")]
         pub text: Option<String>,
-        pub feature: Option<Feature>,
-        pub environment: Option<VariantEnvironment>,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct VariantEnvironment {
-        #[serde(rename = "@name")]
-        pub name: String,
-        #[serde(rename = "$text")]
-        pub text: Option<String>,
-        #[serde(rename = "device")]
-        pub stm32_device: VariantEnvironmentStm32Device,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct VariantEnvironmentStm32Device {
-        #[serde(rename = "$text")]
-        pub text: Option<String>,
-        #[serde(rename = "extra-attributes")]
-        pub extra_attributes: VariantEnvironmentStm32DeviceExtraAttributes,
-        pub descriptors: VariantEnvironmentStm32DeviceDescriptors,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct VariantEnvironmentStm32DeviceExtraAttributes {
-        #[serde(rename = "$text")]
-        pub text: Option<String>,
-        #[serde(rename = "extra-attribute")]
-        pub extra_attribute: VariantEnvironmentStm32DeviceExtraAttributesExtraAttribute,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct VariantEnvironmentStm32DeviceExtraAttributesExtraAttribute {
-        #[serde(rename = "@name")]
-        pub name: String,
-        #[serde(rename = "@value")]
-        pub value: String,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct VariantEnvironmentStm32DeviceDescriptors {
-        #[serde(rename = "$text")]
-        pub text: Option<String>,
-        pub descriptor: VariantEnvironmentStm32DeviceDescriptorsDescriptor,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct VariantEnvironmentStm32DeviceDescriptorsDescriptor {
-        #[serde(rename = "@schemaType")]
-        pub schema_type: String,
-        #[serde(rename = "@path")]
-        pub path: String,
-        #[serde(rename = "@schemaVersion")]
-        pub schema_version: String,
-        #[serde(rename = "@version")]
-        pub version: String,
+        #[serde(rename = "feature")]
+        pub features: Vec<Feature>,
+        #[serde(rename = "environment")]
+        pub environments: Vec<Environment>,
     }
 }
 

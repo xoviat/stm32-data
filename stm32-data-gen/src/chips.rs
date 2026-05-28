@@ -312,6 +312,115 @@ mod pdsc {
         #[serde(rename = "environment")]
         pub environments: Vec<Environment>,
     }
+
+    mod schema {
+        mod pin {
+            use serde::{Deserialize, Serialize};
+
+            #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+            pub struct Pinout {
+                #[serde(rename = "schema_version")]
+                pub schema_version: String,
+                #[serde(rename = "characteristics")]
+                pub characteristics: Characteristics,
+                #[serde(rename = "pin_type_description")]
+                pub pin_type_description: PinTypeDescription,
+                #[serde(rename = "io_structure_type_description")]
+                pub io_structure_type_description: IoStructureTypeDescription,
+                #[serde(rename = "io_structure_options_description")]
+                pub io_structure_options_description: IoStructureOptionsDescription,
+                #[serde(rename = "package_pins")]
+                pub package_pins: Vec<String>,
+                #[serde(rename = "signals")]
+                pub signals: Vec<Signal>,
+                #[serde(rename = "bonds")]
+                pub bonds: Vec<Bond>,
+                #[serde(rename = "version")]
+                pub version: String,
+            }
+
+            #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+            #[serde(rename_all = "PascalCase")]
+            pub struct Characteristics {
+                #[serde(rename = "package_name")]
+                pub package_name: String,
+                #[serde(rename = "package_type")]
+                pub package_type: String,
+                #[serde(rename = "die_name")]
+                pub die_name: String,
+                #[serde(rename = "NbIOs")]
+                pub nb_ios: i64,
+            }
+
+            #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+            #[serde(rename_all = "PascalCase")]
+            pub struct PinTypeDescription {
+                pub s: String,
+                #[serde(rename = "I/O")]
+                pub i_o: String,
+            }
+
+            #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+            #[serde(rename_all = "PascalCase")]
+            pub struct IoStructureTypeDescription {
+                #[serde(rename = "RST")]
+                pub rst: String,
+                #[serde(rename = "FT")]
+                pub ft: String,
+                #[serde(rename = "TT")]
+                pub tt: String,
+            }
+
+            #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+            #[serde(rename_all = "PascalCase")]
+            pub struct IoStructureOptionsDescription {
+                #[serde(rename = "a")]
+                pub a: String,
+                #[serde(rename = "f")]
+                pub f: String,
+            }
+
+            #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+            #[serde(rename_all = "PascalCase")]
+            pub struct Signal {
+                #[serde(rename = "name")]
+                pub name: String,
+                #[serde(rename = "instance")]
+                pub instance: String,
+                #[serde(rename = "die_pad")]
+                pub die_pad: String,
+                #[serde(rename = "function")]
+                pub function: Function,
+            }
+
+            #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+            #[serde(rename_all = "PascalCase")]
+            pub struct Function {
+                #[serde(rename = "type")]
+                pub type_field: String,
+                #[serde(rename = "id")]
+                pub id: Option<String>,
+            }
+
+            #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+            #[serde(rename_all = "PascalCase")]
+            pub struct Bond {
+                #[serde(rename = "die_pad")]
+                pub die_pad: String,
+                #[serde(rename = "position")]
+                pub position: String,
+                #[serde(rename = "sharing")]
+                pub sharing: Option<Sharing>,
+            }
+
+            #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+            #[serde(rename_all = "PascalCase")]
+            pub struct Sharing {
+                #[serde(rename = "signals")]
+                pub signals: Vec<String>,
+            }
+        }
+    }
 }
 
 pub struct Chip {

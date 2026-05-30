@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::chips::{Chip, ChipGroup};
@@ -364,8 +365,8 @@ struct PackageDirectory {
 }
 
 impl PackageDirectory {
-    fn load_pinout(&mut self, f: PathBuf) -> anyhow::Result<Pinout> {
-        match self.pinouts.entry(f) {
+    fn load_pinout(&mut self, f: &Path) -> anyhow::Result<Pinout> {
+        match self.pinouts.entry(f.to_path_buf()) {
             Entry::Occupied(e) => Ok(e.get().clone()),
             Entry::Vacant(e) => {
                 let parsed: Pinout = quick_xml::de::from_str(&std::fs::read_to_string(f)?)?;
@@ -393,19 +394,32 @@ fn parse_psdc(
     for family in parsed.devices.families {
         for subfamily in family.sub_families {
             for device in subfamily.devices {
-                // get all descriptors for this device and its contained variants, and merge them all
-
-                let descriptors: Vec<_> = family
-                    .environments
+                for (variant, descriptors) in device
+                    .variants
                     .iter()
-                    .chain(subfamily.environments.iter())
-                    .chain(device.environments.iter())
-                    .chain(device.variants.iter().map(|v| v.environments.iter()).flatten())
-                    .map(|e| e.device.descriptors.descriptors.iter())
-                    .flatten()
-                    .collect();
+                    .map(|variant| {
+                        let descriptors: HashMap<_, _> = family
+                            .environments
+                            .iter()
+                            .chain(subfamily.environments.iter())
+                            .chain(device.environments.iter())
+                            .chain(variant.environments.iter())
+                            .map(|e| e.device.descriptors.descriptors.iter())
+                            .flatten()
+                            .map(|d| (&d.schema_type, d))
+                            .collect();
 
-                // TODO: iterate by variant with unique pinout
+                        (variant, descriptors)
+                    })
+                    .unique_by(|(_, descriptors)| descriptors.get(&"pinout".to_string()).map(|d| &d.path))
+                {
+                    // for each chip variant with a unique pinout file
+
+                    // TODO: load pinout files
+                    // TODO: build `xml::chip` and `xml::chipgroup` and insert them
+
+                    todo!()
+                }
             }
         }
     }

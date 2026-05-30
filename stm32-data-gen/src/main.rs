@@ -10,6 +10,7 @@ mod interrupts;
 mod low_power;
 mod memory;
 mod normalize_peris;
+mod pdsc;
 mod perimap;
 mod rcc;
 mod registers;

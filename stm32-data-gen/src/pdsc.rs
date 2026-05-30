@@ -1,8 +1,11 @@
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
+use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
 use crate::chips::{Chip, ChipGroup};
+use crate::pdsc::schema::pin::Pinout;
 
 #[derive(Serialize, Deserialize)]
 pub struct Package {
@@ -13,7 +16,8 @@ pub struct Package {
 pub struct Devices {
     #[serde(rename = "$text")]
     pub text: Option<String>,
-    pub family: Family,
+    #[serde(rename = "family")]
+    pub families: Vec<Family>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -32,7 +36,7 @@ pub struct Family {
     #[serde(rename = "environment")]
     pub environments: Vec<Environment>,
     #[serde(rename = "subFamily")]
-    pub sub_family: Vec<SubFamily>,
+    pub sub_families: Vec<SubFamily>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -65,7 +69,8 @@ pub struct SubFamily {
     pub features: Vec<Feature>,
     #[serde(rename = "environment")]
     pub environments: Vec<Environment>,
-    pub device: Vec<Device>,
+    #[serde(rename = "device")]
+    pub devices: Vec<Device>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -120,10 +125,12 @@ pub struct Device {
     pub algorithm: Algorithm,
     pub book: Vec<Book>,
     pub feature: Vec<Feature>,
-    pub environment: Vec<Environment>,
+    #[serde(rename = "environment")]
+    pub environments: Vec<Environment>,
     pub debug: Debug,
     pub flashinfo: Flashinfo,
-    pub variant: Vec<Variant>,
+    #[serde(rename = "variant")]
+    pub variants: Vec<Variant>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -179,7 +186,8 @@ pub struct STDevice {
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Descriptors {
-    pub descriptor: Vec<Descriptor>,
+    #[serde(rename = "descriptor")]
+    pub descriptors: Vec<Descriptor>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -250,7 +258,7 @@ pub struct Variant {
 }
 
 mod schema {
-    mod pin {
+    pub mod pin {
         use serde::{Deserialize, Serialize};
 
         #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -350,12 +358,57 @@ mod schema {
     }
 }
 
+struct PackageDirectory {
+    root: PathBuf,
+    pinouts: HashMap<PathBuf, Pinout>,
+}
+
+impl PackageDirectory {
+    fn load_pinout(&mut self, f: PathBuf) -> anyhow::Result<Pinout> {
+        match self.pinouts.entry(f) {
+            Entry::Occupied(e) => Ok(e.get().clone()),
+            Entry::Vacant(e) => {
+                let parsed: Pinout = quick_xml::de::from_str(&std::fs::read_to_string(f)?)?;
+
+                e.insert(parsed.clone());
+
+                Ok(parsed)
+            }
+        }
+    }
+
+    // TODO: load other schemas
+}
+
 fn parse_psdc(
-    f: std::path::PathBuf,
+    f: PathBuf,
+    d: &mut PackageDirectory,
     chips: &mut HashMap<String, Chip>,
     chip_groups: &mut Vec<ChipGroup>,
 ) -> anyhow::Result<()> {
     // TODO parse the pdsc
+
+    let parsed: Package = quick_xml::de::from_str(&std::fs::read_to_string(f)?)?;
+
+    for family in parsed.devices.families {
+        for subfamily in family.sub_families {
+            for device in subfamily.devices {
+                // get all descriptors for this device and its contained variants, and merge them all
+
+                let descriptors: Vec<_> = family
+                    .environments
+                    .iter()
+                    .chain(subfamily.environments.iter())
+                    .chain(device.environments.iter())
+                    .chain(device.variants.iter().map(|v| v.environments.iter()).flatten())
+                    .map(|e| e.device.descriptors.descriptors.iter())
+                    .flatten()
+                    .collect();
+
+                // TODO: iterate by variant with unique pinout
+            }
+        }
+    }
 
     Ok(())
 }

@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
+use std::f128::consts::E;
+use std::hash::Hash;
 use std::path::{Path, PathBuf};
 
 use itertools::Itertools;
@@ -206,7 +208,7 @@ pub struct Descriptor {
 #[derive(Serialize, Deserialize, Default)]
 pub struct ExtraAttributes {
     #[serde(rename = "extra-attribute")]
-    pub extra_attribute: Vec<ExtraAttribute>,
+    pub extra_attributes: Vec<ExtraAttribute>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -387,32 +389,52 @@ fn parse_psdc(
     chips: &mut HashMap<String, Chip>,
     chip_groups: &mut Vec<ChipGroup>,
 ) -> anyhow::Result<()> {
-    // TODO parse the pdsc
+    let mut groups: HashMap<String, ChipGroup> = HashMap::new();
 
     let parsed: Package = quick_xml::de::from_str(&std::fs::read_to_string(f)?)?;
 
     for family in parsed.devices.families {
         for subfamily in family.sub_families {
             for device in subfamily.devices {
-                for (variant, descriptors) in device
-                    .variants
-                    .iter()
-                    .map(|variant| {
-                        let descriptors: HashMap<_, _> = family
+                // TODO: use extra-attribute: PPN to make chipgroup
+                for (variant, descriptors, extra_attributes) in device.variants.iter().map(|variant| {
+                    let chain_all = || {
+                        family
                             .environments
                             .iter()
                             .chain(subfamily.environments.iter())
                             .chain(device.environments.iter())
                             .chain(variant.environments.iter())
-                            .map(|e| e.device.descriptors.descriptors.iter())
-                            .flatten()
-                            .map(|d| (&d.schema_type, d))
-                            .collect();
+                    };
 
-                        (variant, descriptors)
-                    })
-                    .unique_by(|(_, descriptors)| descriptors.get(&"pinout".to_string()).map(|d| &d.path))
-                {
+                    let descriptors: HashMap<_, _> = chain_all()
+                        .map(|e| e.device.descriptors.descriptors.iter())
+                        .flatten()
+                        .map(|d| (&d.schema_type, d))
+                        .collect();
+
+                    let extra_attributes: HashMap<_, _> = chain_all()
+                        .map(|e| e.device.extra_attributes.extra_attributes.iter())
+                        .flatten()
+                        .map(|a| (&a.name, a))
+                        .collect();
+
+                    (variant, descriptors, extra_attributes)
+                }) {
+                    let Some(ppn) = extra_attributes.get(&"PPN".to_string()) else {
+                        continue;
+                    };
+
+                    groups.entry(ppn.name.clone()).or_insert_with(|| ChipGroup {
+                        chip_names: Vec::new(),
+                        xml: todo!(),
+                        ips: HashMap::new(),
+                        pins: HashMap::new(),
+                        family: todo!(),
+                        line: todo!(),
+                        die: todo!(),
+                    });
+
                     // for each chip variant with a unique pinout file
 
                     // TODO: load pinout files

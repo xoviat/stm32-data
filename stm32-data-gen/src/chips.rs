@@ -240,21 +240,14 @@ fn parse_group(
     });
 
     for (package_i, package_name) in package_names.iter().enumerate() {
-        let chip_name = chip_name_from_package_name(package_name);
-        if !chips.contains_key(&chip_name) {
-            chips.insert(
-                chip_name.clone(),
-                Chip {
-                    flash: package_flashes[package_i],
-                    ram: package_rams[package_i],
-                    group_idx,
-                    packages: Vec::new(),
-                },
-            );
-        }
         chips
-            .get_mut(&chip_name)
-            .unwrap()
+            .entry(chip_name_from_package_name(package_name))
+            .or_insert_with(|| Chip {
+                flash: package_flashes[package_i],
+                ram: package_rams[package_i],
+                group_idx,
+                packages: Vec::new(),
+            })
             .packages
             .push(stm32_data_serde::chip::Package {
                 name: package_name.clone(),
